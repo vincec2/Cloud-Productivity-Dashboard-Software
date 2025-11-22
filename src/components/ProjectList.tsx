@@ -59,7 +59,7 @@ export function ProjectList({
 
   return (
     <>
-      <h2>Projects</h2>
+      <h2 className="colourChange">Projects</h2>
       <form onSubmit={handleSubmit} className="projectlist-form">
         <input
           type="text"
@@ -78,7 +78,7 @@ export function ProjectList({
       </form>
 
       {projects.length === 0 ? (
-        <p>No projects yet. Add one above ✧</p>
+        <p className="colourChange">No projects yet. Add one above ✧</p>
       ) : (
         <ul className="projectlist-list">
           {projects.map((p) => {
@@ -118,7 +118,7 @@ export function ProjectList({
                             e.currentTarget.blur();
                           }
                         }}
-                        className="projectlist-name"
+                        className="projectlist-name colourChange"
                       >
                         {p.name}
                       </span>{" "}

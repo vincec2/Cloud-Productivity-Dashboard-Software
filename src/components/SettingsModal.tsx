@@ -25,6 +25,9 @@ interface SettingsModalProps {
   alarmSoundPath: string | null;
   onChooseAlarmSound: () => Promise<void> | void;
   onClearAlarmSound: () => Promise<void> | void;
+
+  fontColor: string;
+  onFontColorChange: (color: string) => void;
 }
 
 export function SettingsModal({
@@ -42,7 +45,9 @@ export function SettingsModal({
   onPomodoroChange,
   alarmSoundPath,
   onChooseAlarmSound,
-  onClearAlarmSound
+  onClearAlarmSound,
+  fontColor,
+  onFontColorChange
 }: SettingsModalProps) {
   // "tabs": background vs alarm vs pomodoro
   const [activeTab, setActiveTab] = useState<
@@ -153,6 +158,17 @@ export function SettingsModal({
                   </button>
                 </>
               )}
+            </div>
+            <div className="settings-fontcolor">
+              <label className="settings-fontcolor-label">
+                Font colour
+                <input
+                  type="color"
+                  value={fontColor}
+                  onChange={e => onFontColorChange(e.target.value)}
+                  className="settings-fontcolor-input"
+                />
+              </label>
             </div>
           </section>
         )}

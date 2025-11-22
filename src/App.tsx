@@ -75,6 +75,9 @@ function App() {
   const backgroundImagePath = settings.backgroundImagePath ?? null;
   const backgroundImageDataUrl = settings.backgroundImageDataUrl ?? null;
 
+  const fontColor = settings.fontColor ?? "#ffffff"; // or whichever default you like
+
+
   const alarmSoundPath = settings.alarmSoundPath ?? null;
   const alarmSoundDataUrl = settings.alarmSoundDataUrl ?? null;
 
@@ -107,6 +110,18 @@ function App() {
         backgroundImage: `url("${backgroundImageDataUrl}")`,
       }
     : {};
+
+  useEffect(() => {
+    // this will be used by the .colourChange CSS class
+    document.documentElement.style.setProperty(
+      "--cpd-font-color",
+      fontColor
+    );
+  }, [fontColor]);
+
+    function handleFontColorChange(color: string) {
+    updateSettings({ fontColor: color });
+  }
 
   async function handleAddProject(name: string) {
     if (!name.trim()) return;
@@ -330,7 +345,7 @@ function App() {
       <div className="app-inner">
         <header className="app-header">
           <div>
-            <h1>Cloud Productivity Dashboard</h1>
+            <h1 className="colourChange">Cloud Productivity Dashboard</h1>
           </div>
 
           {/* Settings button (opens modal) */}
@@ -396,6 +411,8 @@ function App() {
           alarmSoundPath={alarmSoundPath}
           onChooseAlarmSound={handleChooseAlarmSound}
           onClearAlarmSound={handleClearAlarmSound}
+          fontColor={fontColor}
+          onFontColorChange={handleFontColorChange}
         />
       </div>
     </div>

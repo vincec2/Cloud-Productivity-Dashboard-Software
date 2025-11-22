@@ -48,6 +48,7 @@ export function CountdownTimer({
   >("idle");
   const [completedWorkSessions, setCompletedWorkSessions] = useState(0);
   const [showBreakPopup, setShowBreakPopup] = useState(false);
+  const [showWorkPopup, setShowWorkPopup] = useState(false);
 
 
   const hoursRef = useRef<HTMLSpanElement | null>(null);
@@ -130,7 +131,7 @@ export function CountdownTimer({
           if (currentPhase === "work") {
             const nextCount = completedWorkSessions + 1;
             setCompletedWorkSessions(nextCount);
-
+            setShowWorkPopup(false);
             setShowBreakPopup(true);
 
             if (
@@ -149,6 +150,7 @@ export function CountdownTimer({
           ) {
             setCurrentPhase("work");
             setShowBreakPopup(false);
+            setShowWorkPopup(true);
             return pomodoroWorkSeconds;
           } else {
             // idle → start fresh work session
@@ -287,12 +289,13 @@ export function CountdownTimer({
     }
   }
 
-  function handleBreakBackdropClick(
+  function handleBackdropClick(
     e: React.MouseEvent<HTMLDivElement>
   ) {
     // only close if user clicked the backdrop, not the popup itself
     if (e.target === e.currentTarget) {
       setShowBreakPopup(false);
+      setShowWorkPopup(false);
     }
   }
 
@@ -387,7 +390,7 @@ export function CountdownTimer({
         (currentPhase === "shortBreak" || currentPhase === "longBreak") && (
           <div
             className="break-backdrop"
-            onClick={handleBreakBackdropClick}
+            onClick={handleBackdropClick}
           >
             <div
               className="break-modal"
@@ -400,6 +403,31 @@ export function CountdownTimer({
                   type="button"
                   className="break-modal-button"
                   onClick={() => setShowBreakPopup(false)}
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+      {usePomodoro &&
+        showWorkPopup &&
+        (currentPhase === "work") && (
+          <div
+            className="work-backdrop"
+            onClick={handleBackdropClick}
+          >
+            <div
+              className="work-modal"
+              onClick={e => e.stopPropagation()}
+            >
+              <img className="" src="" alt=""/>
+              <h3 className="work-modal-text">Time to Work...</h3>
+              <div className="work-modal-button-row">
+                <button
+                  type="button"
+                  className="work-modal-button"
+                  onClick={() => setShowWorkPopup(false)}
                 >
                   Got it
                 </button>

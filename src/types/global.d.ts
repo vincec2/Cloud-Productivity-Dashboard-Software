@@ -30,6 +30,8 @@ export interface AppSettings {
 
   alarmSoundPath?: string | null;
   alarmSoundDataUrl?: string | null;
+
+  fontColor?: string | null;
 }
 
 export interface AppData {

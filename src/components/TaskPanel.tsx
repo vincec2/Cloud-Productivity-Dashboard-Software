@@ -47,7 +47,7 @@ export function TaskPanel({
 
   return (
     <>
-      <h2>
+      <h2 className="colourChange">
         Tasks{" "}
         {project && (
           <span className="taskpanel-heading-sub">
@@ -56,7 +56,7 @@ export function TaskPanel({
         )}
       </h2>
 
-      {!project && <p>Select a project to see its tasks.</p>}
+      {!project && <p className="colourChange">Select a project to see its tasks.</p>}
 
       {project && (
         <>
@@ -78,7 +78,7 @@ export function TaskPanel({
           </form>
 
           {tasks.length === 0 ? (
-            <p>No tasks yet. Add one above ✧</p>
+            <p className="colourChange">No tasks yet. Add one above ✧</p>
           ) : (
             <ul className="taskpanel-list">
               {tasks.map((t) => (
@@ -102,7 +102,7 @@ export function TaskPanel({
                               e.currentTarget.blur();
                             }
                           }}
-                          className="taskpanel-title-editable"
+                          className="taskpanel-title-editable colourChange"
                         >
                           {t.title}
                         </span>
