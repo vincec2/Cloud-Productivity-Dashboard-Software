@@ -1,0 +1,489 @@
+html,
+body,
+#root {
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#root {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 2rem;
+  text-align: center;
+}
+
+body {
+  /* optional: if you don't want scrollbars when the background is bigger */
+  overflow: hidden;
+}
+
+.logo {
+  height: 6em;
+  padding: 1.5em;
+  will-change: filter;
+  transition: filter 300ms;
+}
+.logo:hover {
+  filter: drop-shadow(0 0 2em #646cffaa);
+}
+.logo.react:hover {
+  filter: drop-shadow(0 0 2em #61dafbaa);
+}
+
+@keyframes logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  a:nth-of-type(2) .logo {
+    animation: logo-spin infinite 20s linear;
+  }
+}
+
+.card {
+  padding: 2em;
+}
+
+.read-the-docs {
+  color: #888;
+}
+
+/* Hide scrollbar by default, show on hover (Chromium/Electron) */
+.scroll-panel {
+  scrollbar-width: none; /* Firefox */
+}
+
+.scroll-panel::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
+.scroll-panel:hover::-webkit-scrollbar {
+  width: 8px;
+}
+
+.scroll-panel:hover::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scroll-panel:hover::-webkit-scrollbar-thumb {
+  background-color: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+/* === App layout === */
+
+.app-background {
+  height: 100vh;
+  width: 100vw;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.app-inner {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  min-height: 100vh;
+  box-sizing: border-box;
+}
+
+.app-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.app-settings-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.9rem;
+}
+
+.app-error {
+  color: red;
+}
+
+.app-main-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1.8fr;
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.app-scroll-section {
+  max-height: 70vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.app-loading {
+  padding: 2rem;
+}
+
+/* === Settings modal === */
+
+.settings-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.settings-modal {
+  background-color: white;
+  padding: 1.5rem;
+  border-radius: 8px;
+  max-width: 420px;
+  width: 100%;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  font-family: 'Qilka';
+}
+
+.settings-section {
+  margin-top: 1rem;
+}
+
+.settings-section--pomodoro {
+  margin-top: 1.5rem;
+}
+
+.settings-section-title {
+  margin-bottom: 0.5rem;
+  color: black;
+}
+
+.settings-body-text {
+  font-size: 0.9rem;
+  color: black;
+}
+
+.settings-preview-wrapper {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.settings-preview {
+  width: 100%;
+  height: 120px;
+  border-radius: 4px;
+}
+
+.settings-preview--image {
+  border: 1px solid #ccc;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.settings-preview--empty {
+  border: 1px dashed #bbb;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  color: #777;
+}
+
+.settings-buttons-column {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.settings-current-file {
+  font-size: 0.8rem;
+  color: #555;
+  word-break: break-all;
+}
+
+.settings-pomodoro-label {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.9rem;
+  color: black;
+}
+
+.settings-pomodoro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.settings-pomodoro-input-wrapper {
+  font-size: 0.9rem;
+  color: black;
+}
+
+.settings-pomodoro-input {
+  width: 100%;
+  padding: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.settings-footer {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1.5rem;
+}
+
+/* === Countdown timer === */
+
+.timer-section {
+  margin-top: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  background-color: black;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.timer-display {
+  font-size: 1.8rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  min-width: 9.5rem;
+}
+
+.timer-display-part {
+  outline: none;
+}
+
+.timer-display-part--editable {
+  cursor: text;
+}
+
+.timer-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.timer-button {
+  padding: 0.35rem 0.75rem;
+}
+
+.timer-section.break {
+  background-color: rgb(93, 148, 193);
+}
+
+/* === Pomodoro break popup === */
+
+.break-backdrop {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9000;
+}
+
+.break-modal {
+  background-color: white;
+  padding: 1rem 1.25rem;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  max-width: 320px;
+  width: 100%;
+  text-align: left;
+}
+
+.break-modal-text {
+  font-size: 1.1rem;
+  margin-bottom: 0.75rem;
+  color: black;
+}
+
+.break-modal-phase {
+  font-weight: 600;
+}
+
+.break-modal-button-row {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.break-modal-button {
+  padding: 0.3rem 0.75rem;
+}
+
+.break-gif {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
+/* === Project list === */
+
+.projectlist-form {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: transparent;
+  padding-top: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.projectlist-input {
+  padding: 0.5rem;
+  flex: 1;
+}
+
+.projectlist-addbutton {
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+}
+
+.projectlist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.projectlist-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.3rem 0;
+}
+
+.projectlist-selectbutton {
+  border: none;
+  background: transparent;
+  text-align: left;
+  padding: 0.25rem 0.5rem;
+  width: 100%;
+  cursor: pointer;
+}
+
+.projectlist-selectbutton--selected {
+  background: #102157ff;
+}
+
+.projectlist-selectbutton--completed {
+  background: #004329ff;
+}
+
+.projectlist-name {
+  outline: none;
+  cursor: text;
+}
+
+.projectlist-badge {
+  font-size: 0.8rem;
+  color: #1a7f1a;
+  margin-left: 0.3rem;
+}
+
+.projectlist-deletebutton {
+  padding: 0.3rem 0.6rem;
+}
+
+/* === Task panel === */
+
+.taskpanel-heading-sub {
+  font-size: 0.9rem;
+  font-weight: normal;
+}
+
+.taskpanel-form {
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  background-color: transparent;
+  padding-top: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.taskpanel-input {
+  padding: 0.5rem;
+  flex: 1;
+}
+
+.taskpanel-addbutton {
+  margin-left: 0.5rem;
+  padding: 0.5rem 1rem;
+  white-space: nowrap;
+}
+
+.taskpanel-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.taskpanel-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid #eee;
+  gap: 0.5rem;
+}
+
+.taskpanel-title-editable {
+  outline: none;
+  cursor: text;
+}
+
+.taskpanel-right {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.taskpanel-deletebutton {
+  padding: 0.3rem 0.6rem;
+}
+
+/* === Settings tabs === */
+
+.settings-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.settings-tab-button {
+  padding: 0.35rem 0.75rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  cursor: pointer;
+  font-size: 0.9rem;
+  color: black;
+}
+
+.settings-tab-button--active {
+  background: #102157ff;
+  color: #fff;
+  border-color: #102157ff;
+}
