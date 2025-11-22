@@ -15,7 +15,6 @@ body,
 }
 
 body {
-  /* optional: if you don't want scrollbars when the background is bigger */
   overflow: hidden;
 }
 
@@ -213,7 +212,6 @@ body {
   color: var(--cpd-font-color, #ffffff);
 }
 
-/* Optional: settings colour picker tweaks */
 .settings-fontcolor {
   margin-top: 0.75rem;
 }
