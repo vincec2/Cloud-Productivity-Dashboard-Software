@@ -1,7 +1,7 @@
 {
   "name": "cloud-productivity-dashboard",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.1.0",
   "author": "vincec2",
   "main": "electron/main.cjs",
   "type": "module",
@@ -16,6 +16,7 @@
   "build": {
     "appId": "com.vincec2.cloudproductivitydashboard",
     "productName": "Cloud Productivity Dashboard",
+    "icon": "src/assets/CPDIcon.ico",
     "files": [
       "dist/**",
       "electron/**",

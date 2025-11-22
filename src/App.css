@@ -396,6 +396,12 @@ body {
   padding: 0.3rem 0.75rem;
 }
 
+.work-gif {
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+}
+
 /* === Project list === */
 
 .projectlist-form {

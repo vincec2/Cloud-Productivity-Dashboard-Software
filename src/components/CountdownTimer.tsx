@@ -6,6 +6,7 @@ import {
   type KeyboardEvent
 } from "react";
 import breakGif from '../assets/images/spongebobbreak.gif';
+import workGif from '../assets/images/bestrongwork.gif';
 
 function splitHMS(totalSeconds: number) {
   const clamped = Math.max(0, Math.floor(totalSeconds));
@@ -421,7 +422,7 @@ export function CountdownTimer({
               className="work-modal"
               onClick={e => e.stopPropagation()}
             >
-              <img className="" src="" alt=""/>
+              <img className="work-gif" src={workGif} alt="work gif"/>
               <h3 className="work-modal-text">Time to Work...</h3>
               <div className="work-modal-button-row">
                 <button
