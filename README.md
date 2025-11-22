@@ -1,6 +1,8 @@
 # Cloud Productivity Dashboard
 
 A local-first desktop app for managing projects, tasks, and focus time — built with **Electron + React + TypeScript** and packaged as a Windows `.exe`. All data is stored in a single JSON file on disk (no servers, no cloud, no login).
+You can download the latest Windows installerfrom the
+[Releases page](https://github.com/vincec2/Cloud-Proudctivity-Dashboard-Software/releases/latest)
 
 ---
 
