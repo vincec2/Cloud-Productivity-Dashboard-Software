@@ -16,7 +16,7 @@
   "build": {
     "appId": "com.vincec2.cloudproductivitydashboard",
     "productName": "Cloud Productivity Dashboard",
-    "icon": "src/assets/CPDIcon.ico",
+    "icon": "src/assets/CloudProductivityLogo.ico",
     "files": [
       "dist/**",
       "electron/**",
