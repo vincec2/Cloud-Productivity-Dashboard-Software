@@ -5,17 +5,75 @@ import {
   type CSSProperties,
 } from "react";
 import "./App.css";
-import type { AppData, Project, Task, TaskStatus, AppSettings } from "./types/global";
+import type {
+  AppData,
+  Project,
+  Task,
+  TaskStatus,
+  AppSettings,
+  Focus100Data
+} from "./types/global";
 import { SettingsModal } from "./components/SettingsModal";
 import { ProjectList } from "./components/ProjectList";
 import { TaskPanel } from "./components/TaskPanel";
 import { CountdownTimer } from "./components/CountdownTimer";
+import { Focus100Panel } from "./components/Focus100Panel";
 
+type RightPanelTab = "tasks" | "focus100";
 
-const emptyData: AppData = { projects: [] };
+function createEmptyFocus100(): Focus100Data {
+  return {
+    started: false,
+    startDate: null,
+    lastClockInDate: null,
+    lastConfirmedFocusDate: null,
+    streakDays: 0,
+    tasks: [],
+    finishedAt: null,
+    restartCount: 0,
+    lastMessage: null
+  };
+}
+
+const emptyData: AppData = {
+  projects: [],
+  focus100: createEmptyFocus100()
+};
 
 function generateId() {
   return crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
+}
+
+function localDateString(date = new Date()) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function normalizeAppData(loaded: AppData | null | undefined): AppData {
+  const focus100Defaults = createEmptyFocus100();
+
+  return {
+    projects: loaded?.projects ?? [],
+    settings: loaded?.settings,
+    focus100: {
+      ...focus100Defaults,
+      ...(loaded?.focus100 ?? {}),
+      tasks: loaded?.focus100?.tasks ?? []
+    }
+  };
+}
+
+function shouldOpenFocus100Tab(focus100: Focus100Data) {
+  const today = localDateString();
+
+  return (
+    focus100.started &&
+    !focus100.finishedAt &&
+    !!focus100.lastClockInDate &&
+    focus100.lastClockInDate !== today
+  );
 }
 
 function App() {
@@ -23,6 +81,8 @@ function App() {
   const [selectedProjectId, setSelectedProjectId] = useState<string | null>(
     null
   );
+
+  const [rightPanelTab, setRightPanelTab] = useState<RightPanelTab>("tasks");
 
   const [loading, setLoading] = useState(true);
   const [savingProject, setSavingProject] = useState(false);
@@ -36,11 +96,15 @@ function App() {
     (async () => {
       try {
         const loaded = await window.api.loadData();
-        const safe = loaded ?? emptyData;
+        const safe = normalizeAppData(loaded);
         setData(safe);
 
         if (safe.projects?.length && !selectedProjectId) {
           setSelectedProjectId(safe.projects[0].id);
+        }
+
+        if (safe.focus100 && shouldOpenFocus100Tab(safe.focus100)) {
+          setRightPanelTab("focus100");
         }
       } catch (e) {
         console.error(e);
@@ -66,6 +130,8 @@ function App() {
   const selectedProject =
     projects.find((p) => p.id === selectedProjectId) ?? null;
   const tasks: Task[] = selectedProject ? selectedProject.tasks : [];
+
+  const focus100: Focus100Data = data.focus100 ?? createEmptyFocus100();
 
   // const totalProjects = projects.length;
   // const totalTasks = projects.reduce((sum, p) => sum + p.tasks.length, 0);
@@ -119,7 +185,7 @@ function App() {
     );
   }, [fontColor]);
 
-    function handleFontColorChange(color: string) {
+  function handleFontColorChange(color: string) {
     updateSettings({ fontColor: color });
   }
 
@@ -268,6 +334,15 @@ function App() {
     await persist(updated);
   }
 
+  async function handleFocus100Change(nextFocus100: Focus100Data) {
+    const updated: AppData = {
+      ...data,
+      focus100: nextFocus100
+    };
+
+    await persist(updated);
+  }
+
   // SETTINGS actions
   function updateSettings(partial: Partial<AppSettings>) {
     const newSettings: AppSettings = {
@@ -356,7 +431,7 @@ function App() {
           </div>
         </header>
 
-        <CountdownTimer 
+        <CountdownTimer
           key={timerKey}
           usePomodoro={usePomodoro}
           pomodoroWorkSeconds={pomodoroWorkSeconds}
@@ -382,15 +457,47 @@ function App() {
           </section>
 
           <section className="scroll-panel app-scroll-section">
-            <TaskPanel
-              project={selectedProject}
-              tasks={tasks}
-              savingTask={savingTask}
-              onAddTask={handleAddTask}
-              onChangeStatus={handleStatusChange}
-              onDeleteTask={handleDeleteTask}
-              onRenameTask={handleRenameTask} 
-            />
+            <div className="taskpanel-tabs">
+              <button
+                type="button"
+                className={
+                  rightPanelTab === "tasks"
+                    ? "taskpanel-tab-button taskpanel-tab-button--active"
+                    : "taskpanel-tab-button"
+                }
+                onClick={() => setRightPanelTab("tasks")}
+              >
+                Tasks
+              </button>
+              <button
+                type="button"
+                className={
+                  rightPanelTab === "focus100"
+                    ? "taskpanel-tab-button taskpanel-tab-button--active"
+                    : "taskpanel-tab-button"
+                }
+                onClick={() => setRightPanelTab("focus100")}
+              >
+                Focus 100
+              </button>
+            </div>
+
+            {rightPanelTab === "tasks" ? (
+              <TaskPanel
+                project={selectedProject}
+                tasks={tasks}
+                savingTask={savingTask}
+                onAddTask={handleAddTask}
+                onChangeStatus={handleStatusChange}
+                onDeleteTask={handleDeleteTask}
+                onRenameTask={handleRenameTask}
+              />
+            ) : (
+              <Focus100Panel
+                focus100={focus100}
+                onChange={handleFocus100Change}
+              />
+            )}
           </section>
         </div>
 

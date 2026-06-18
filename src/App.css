@@ -14,10 +14,6 @@ body,
   text-align: center;
 }
 
-body {
-  overflow: hidden;
-}
-
 .logo {
   height: 6em;
   padding: 1.5em;
@@ -119,9 +115,11 @@ body {
 }
 
 .app-scroll-section {
-  max-height: 70vh;
+  height: calc(100vh - 230px);
+  max-height: calc(100vh - 230px);
   overflow-y: auto;
   padding-right: 0.5rem;
+  min-height: 0;
 }
 
 .app-loading {
@@ -556,4 +554,227 @@ body {
   background: #102157ff;
   color: #fff;
   border-color: #102157ff;
+}
+
+/* === Right panel tabs === */
+
+.taskpanel-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding-top: 0.25rem;
+  padding-bottom: 0.5rem;
+}
+
+.taskpanel-tab-button {
+  padding: 0.4rem 0.85rem;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  background: #f5f5f5;
+  color: black;
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.taskpanel-tab-button--active {
+  background: #102157ff;
+  color: #fff;
+  border-color: #102157ff;
+}
+
+/* === Focus 100 === */
+
+.focus100-panel {
+  text-align: left;
+}
+
+.focus100-card {
+  background: rgba(0, 0, 0, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 10px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  color: white;
+}
+
+.focus100-start-card,
+.focus100-checkin-card {
+  text-align: center;
+}
+
+.focus100-message {
+  background: #102157ff;
+  color: white;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.focus100-button-row {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.focus100-primary-button,
+.focus100-danger-button,
+.focus100-add-button,
+.focus100-delete-button {
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.focus100-primary-button {
+  background: #004329ff;
+  color: white;
+}
+
+.focus100-danger-button,
+.focus100-delete-button {
+  background: #7a1f1fff;
+  color: white;
+}
+
+.focus100-add-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.focus100-stats {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.focus100-stat-number {
+  font-size: 2.2rem;
+  font-weight: 700;
+}
+
+.focus100-stat-label,
+.focus100-small-text {
+  font-size: 0.9rem;
+  opacity: 0.9;
+}
+
+.focus100-progress-track {
+  height: 12px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.focus100-progress-fill {
+  height: 100%;
+  background: #ffffff;
+  border-radius: 999px;
+  transition: width 200ms ease;
+}
+
+.focus100-finished-text {
+  margin-bottom: 0;
+  font-weight: 600;
+}
+
+.focus100-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.focus100-input {
+  flex: 1;
+  padding: 0.5rem;
+}
+
+.focus100-task-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.focus100-task-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.45rem 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.focus100-task-left {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-width: 0;
+  flex: 1;
+}
+
+.focus100-task-title {
+  outline: none;
+  cursor: text;
+  word-break: break-word;
+}
+
+.focus100-task-title--completed {
+  text-decoration: line-through;
+  opacity: 0.7;
+}
+
+
+.focus100-finished-box {
+  margin-top: 0.75rem;
+}
+
+.focus100-finished-box button {
+  margin-top: 0.5rem;
+}
+
+.focus100-panel {
+  padding-bottom: 2rem;
+}
+
+.focus100-card {
+  margin-bottom: 1rem;
+}
+
+.focus100-task-list {
+  max-height: 32vh;
+  overflow-y: auto;
+  padding-right: 0.4rem;
+}
+
+@media (max-height: 750px) {
+  .app-inner {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .timer-section {
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
+    padding: 0.5rem 0.75rem;
+  }
+
+  .app-main-grid {
+    margin-top: 0.5rem;
+  }
+
+  .app-scroll-section {
+    height: calc(100vh - 190px);
+    max-height: calc(100vh - 190px);
+  }
+
+  .focus100-card {
+    margin-bottom: 0.75rem;
+  }
 }

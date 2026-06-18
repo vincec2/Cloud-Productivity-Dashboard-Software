@@ -15,6 +15,24 @@ export interface Project {
   tasks: Task[];
 }
 
+export interface Focus100Task {
+  id: string;
+  title: string;
+  completed: boolean;
+}
+
+export interface Focus100Data {
+  started: boolean;
+  startDate: string | null; // local YYYY-MM-DD
+  lastClockInDate: string | null; // local YYYY-MM-DD
+  lastConfirmedFocusDate: string | null; // local YYYY-MM-DD
+  streakDays: number;
+  tasks: Focus100Task[];
+  finishedAt?: string | null; // local YYYY-MM-DD
+  restartCount?: number;
+  lastMessage?: string | null;
+}
+
 export interface AppSettings {
   // Absolute path to the chosen image (for display in Settings)
   backgroundImagePath?: string | null;
@@ -37,6 +55,7 @@ export interface AppSettings {
 export interface AppData {
   projects: Project[];
   settings?: AppSettings;
+  focus100?: Focus100Data;
 }
 
 declare global {
