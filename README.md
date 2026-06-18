@@ -1,6 +1,6 @@
 # Cloud Productivity Dashboard - Windows Only
 
-A local-first desktop app for managing projects, tasks, and focus time — built with **Electron + React + TypeScript** and packaged as a Windows `.exe`. All data is stored in a single JSON file on disk (no servers, no cloud, no login).
+A local-first desktop app for managing projects, tasks, and focus time — built with **Electron + React + TypeScript** and packaged as a Windows `.exe`. All data is stored in a single JSON file on disk (no servers, no cloud, no login for now).
 You can download the latest Windows installer from the
 [Releases page](https://github.com/vincec2/Cloud-Productivity-Dashboard-Software/releases/latest)
 
@@ -47,6 +47,12 @@ You can download the latest Windows installer from the
 - **Alarm sound:**
   - Optional audio alarm that plays whenever the timer reaches 0, in both classic and Pomodoro modes.
   - Custom MP3/WAV file can be chosen in Settings.
+
+### Focus100
+- Start a 100 day focus challenge which you can't pause or end
+- Missing a day or not focusing on any day restarts the challenge
+- Includes an editable productivity task list
+- Can do the challenge as many times as possible
 
 ### Settings Modal
 Accessible via the **Settings…** button in the header. It’s a modal with three tabs:
