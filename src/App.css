@@ -103,8 +103,50 @@ body,
   font-size: 0.9rem;
 }
 
+.app-settings-row form {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  max-width: 22rem;
+}
+
+.app-settings-row input {
+  width: 8.5rem;
+  box-sizing: border-box;
+  padding: 0.35rem 0.5rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 0.85rem;
+}
+
+.app-settings-row form input[type="email"] {
+  position: relative;
+  right: 4.6rem;
+}
+
+.app-settings-row button {
+  padding: 0.35rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.app-settings-row button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .app-error {
   color: red;
+}
+
+.app-sync-message {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.9rem;
 }
 
 .app-main-grid {

@@ -11,6 +11,10 @@ function generateId() {
   return crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
 }
 
+function nowIso() {
+  return new Date().toISOString();
+}
+
 const FOCUS100_GOAL_DAYS = 100;
 
 function localDateString(date = new Date()) {
@@ -39,7 +43,13 @@ function addDays(dateString: string, amount: number) {
 }
 
 function resetTaskChecks(tasks: Focus100Task[]) {
-  return tasks.map((task) => ({ ...task, completed: false }));
+  const updatedAt = nowIso();
+
+  return tasks.map((task) => ({
+    ...task,
+    completed: false,
+    updatedAt,
+  }));
 }
 
 export function Focus100Panel({ focus100, onChange }: Focus100PanelProps) {
@@ -63,6 +73,8 @@ export function Focus100Panel({ focus100, onChange }: Focus100PanelProps) {
     100,
     (focus100.streakDays / FOCUS100_GOAL_DAYS) * 100
   );
+
+  const visibleTasks = focus100.tasks.filter((task) => !task.deletedAt);
 
   useEffect(() => {
     if (!missedClockIn) return;
@@ -150,10 +162,15 @@ export function Focus100Panel({ focus100, onChange }: Focus100PanelProps) {
     const trimmed = newTaskTitle.trim();
     if (!trimmed) return;
 
+    const createdAt = nowIso();
+
     const newTask: Focus100Task = {
       id: generateId(),
       title: trimmed,
-      completed: false
+      completed: false,
+      createdAt,
+      updatedAt: createdAt,
+      deletedAt: null,
     };
 
     void onChange({
@@ -165,18 +182,32 @@ export function Focus100Panel({ focus100, onChange }: Focus100PanelProps) {
   }
 
   function toggleFocusTask(taskId: string) {
+    const updatedAt = nowIso();
+
     void onChange({
       ...focus100,
       tasks: focus100.tasks.map((task) =>
-        task.id === taskId ? { ...task, completed: !task.completed } : task
-      )
+        task.id === taskId
+          ? { ...task, completed: !task.completed, updatedAt }
+          : task
+      ),
     });
   }
 
   function deleteFocusTask(taskId: string) {
+    const deletedAt = nowIso();
+
     void onChange({
       ...focus100,
-      tasks: focus100.tasks.filter((task) => task.id !== taskId)
+      tasks: focus100.tasks.map((task) =>
+        task.id === taskId
+          ? {
+              ...task,
+              deletedAt,
+              updatedAt: deletedAt,
+            }
+          : task
+      ),
     });
   }
 
@@ -194,8 +225,10 @@ export function Focus100Panel({ focus100, onChange }: Focus100PanelProps) {
 
     void onChange({
       ...focus100,
-      tasks: focus100.tasks.map((task) =>
-        task.id === taskId ? { ...task, title: trimmed } : task
+      tasks: visibleTasks.map((task) =>
+        task.id === taskId
+          ? { ...task, title: trimmed, updatedAt: nowIso() }
+          : task
       )
     });
   }
@@ -310,14 +343,14 @@ export function Focus100Panel({ focus100, onChange }: Focus100PanelProps) {
           </button>
         </form>
 
-        {focus100.tasks.length === 0 ? (
+        {visibleTasks.length === 0 ? (
           <p className="focus100-small-text">
             Add tasks like study, apply to jobs, clean, code, workout, read, or
             anything else that counts as productive.
           </p>
         ) : (
           <ul className="focus100-task-list">
-            {focus100.tasks.map((task) => (
+            {visibleTasks.map((task) => (
               <li key={task.id} className="focus100-task-item">
                 <label className="focus100-task-left">
                   <input

@@ -1,3 +1,82 @@
 {
-  "projects": []
+  "projects": [
+    {
+      "id": "8fc499b0-0e65-47b3-9a94-38d8daccd3ad",
+      "name": "testing",
+      "createdAt": "2026-06-20T19:45:24.131Z",
+      "updatedAt": "2026-06-20T19:54:23.749Z",
+      "deletedAt": null,
+      "tasks": [
+        {
+          "id": "4963bd97-992f-41a9-acab-0b9c19a799ef",
+          "title": "task1",
+          "status": "in-progress",
+          "createdAt": "2026-06-20T19:45:28.955Z",
+          "updatedAt": "2026-06-20T19:54:23.749Z",
+          "deletedAt": null
+        },
+        {
+          "id": "a1568cca-b1c5-432a-9ad6-b3424f1afe2a",
+          "title": "task2",
+          "status": "todo",
+          "createdAt": "2026-06-20T19:53:15.310Z",
+          "updatedAt": "2026-06-20T19:54:21.908Z",
+          "deletedAt": "2026-06-20T19:54:21.908Z"
+        }
+      ]
+    },
+    {
+      "id": "e57283a2-e79a-4fcc-9d0e-cb9f67e1a579",
+      "name": "testin2",
+      "createdAt": "2026-06-20T19:59:19.122Z",
+      "updatedAt": "2026-06-20T19:59:22.414Z",
+      "deletedAt": null,
+      "tasks": [
+        {
+          "id": "22dfc8fd-2d1b-4746-90a7-dc2e2549aaf7",
+          "title": "task1.1",
+          "status": "todo",
+          "createdAt": "2026-06-20T19:59:22.414Z",
+          "updatedAt": "2026-06-20T19:59:22.414Z",
+          "deletedAt": null
+        }
+      ]
+    },
+    {
+      "name": "testing3",
+      "deletedAt": null,
+      "updatedAt": "2026-06-20T20:50:58.067Z",
+      "id": "2ee488c5-b9a8-423b-9d16-71eca13bff00",
+      "createdAt": "2026-06-20T20:50:58.067Z",
+      "tasks": []
+    },
+    {
+      "id": "79657168-4db8-4d33-9184-d665be38fcce",
+      "name": "testing4",
+      "createdAt": "2026-06-20T20:52:02.722Z",
+      "updatedAt": "2026-06-20T20:52:02.722Z",
+      "deletedAt": null,
+      "tasks": []
+    }
+  ],
+  "settings": {
+    "backgroundImagePath": null,
+    "backgroundImageDataUrl": null,
+    "alarmSoundPath": null,
+    "alarmSoundDataUrl": null
+  },
+  "focus100": {
+    "finishedAt": null,
+    "tasks": [],
+    "restartCount": 0,
+    "lastConfirmedFocusDate": null,
+    "updatedAt": "2026-06-20T20:39:42.110Z",
+    "started": false,
+    "streakDays": 0,
+    "startDate": null,
+    "lastClockInDate": null,
+    "lastMessage": null
+  },
+  "dataUpdatedAt": "2026-06-20T20:52:02.722Z",
+  "lastSyncedAt": "2026-06-20T20:51:56.303Z"
 }

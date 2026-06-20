@@ -3,7 +3,9 @@ import {
   useEffect,
   useState,
   type CSSProperties,
+  type FormEvent,
 } from "react";
+import type { User } from "firebase/auth";
 import "./App.css";
 import type {
   AppData,
@@ -11,13 +13,19 @@ import type {
   Task,
   TaskStatus,
   AppSettings,
-  Focus100Data
+  Focus100Data,
 } from "./types/global";
 import { SettingsModal } from "./components/SettingsModal";
 import { ProjectList } from "./components/ProjectList";
 import { TaskPanel } from "./components/TaskPanel";
 import { CountdownTimer } from "./components/CountdownTimer";
 import { Focus100Panel } from "./components/Focus100Panel";
+import { login, register, logout, observeAuthState } from "./auth";
+import {
+  normalizeForSync,
+  stampLocalChange,
+  syncWithFirebase,
+} from "./services/syncService";
 
 type RightPanelTab = "tasks" | "focus100";
 
@@ -31,17 +39,32 @@ function createEmptyFocus100(): Focus100Data {
     tasks: [],
     finishedAt: null,
     restartCount: 0,
-    lastMessage: null
+    lastMessage: null,
   };
 }
 
 const emptyData: AppData = {
   projects: [],
-  focus100: createEmptyFocus100()
+  focus100: createEmptyFocus100(),
 };
 
 function generateId() {
   return crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
+}
+
+function getOrCreateDeviceId() {
+  const existing = localStorage.getItem("cpdDeviceId");
+  if (existing) return existing;
+
+  const created =
+    crypto.randomUUID?.() ?? Math.random().toString(36).slice(2);
+
+  localStorage.setItem("cpdDeviceId", created);
+  return created;
+}
+
+function nowIso() {
+  return new Date().toISOString();
 }
 
 function localDateString(date = new Date()) {
@@ -60,8 +83,10 @@ function normalizeAppData(loaded: AppData | null | undefined): AppData {
     focus100: {
       ...focus100Defaults,
       ...(loaded?.focus100 ?? {}),
-      tasks: loaded?.focus100?.tasks ?? []
-    }
+      tasks: loaded?.focus100?.tasks ?? [],
+    },
+    dataUpdatedAt: loaded?.dataUpdatedAt,
+    lastSyncedAt: loaded?.lastSyncedAt,
   };
 }
 
@@ -91,19 +116,42 @@ function App() {
 
   const [settingsOpen, setSettingsOpen] = useState(false);
 
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+  const [authMode, setAuthMode] = useState<"login" | "register">("login");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [syncing, setSyncing] = useState(false);
+  const [syncMessage, setSyncMessage] = useState<string | null>(null);
+  const [deviceId] = useState(() => getOrCreateDeviceId());
+
+  useEffect(() => {
+    const unsubscribe = observeAuthState((nextUser) => {
+      setUser(nextUser);
+      setAuthLoading(false);
+    });
+
+    return unsubscribe;
+  }, []);
+
   // load data from Electron on startup
   useEffect(() => {
     (async () => {
       try {
         const loaded = await window.api.loadData();
         const safe = normalizeAppData(loaded);
-        setData(safe);
+        const syncReady = normalizeForSync(safe);
 
-        if (safe.projects?.length && !selectedProjectId) {
-          setSelectedProjectId(safe.projects[0].id);
+        setData(syncReady);
+
+        const visibleProjects = syncReady.projects.filter((p) => !p.deletedAt);
+
+        if (visibleProjects.length && !selectedProjectId) {
+          setSelectedProjectId(visibleProjects[0].id);
         }
 
-        if (safe.focus100 && shouldOpenFocus100Tab(safe.focus100)) {
+        if (syncReady.focus100 && shouldOpenFocus100Tab(syncReady.focus100)) {
           setRightPanelTab("focus100");
         }
       } catch (e) {
@@ -118,35 +166,101 @@ function App() {
 
   async function persist(updated: AppData) {
     try {
-      await window.api.saveData(updated);
-      setData(updated);
+      const stamped = stampLocalChange(updated);
+      await window.api.saveData(stamped);
+      setData(stamped);
     } catch (e) {
       console.error(e);
       setError("Failed to save data.");
     }
   }
 
-  const projects = data.projects;
+  async function handleAuthSubmit(e: FormEvent) {
+    e.preventDefault();
+    setError(null);
+    setSyncMessage(null);
+
+    try {
+      if (authMode === "login") {
+        await login(email.trim(), password);
+      } else {
+        await register(email.trim(), password);
+      }
+
+      setEmail("");
+      setPassword("");
+      setSyncMessage("Logged in. You can sync now.");
+    } catch (e) {
+      console.error(e);
+      setError("Authentication failed.");
+    }
+  }
+
+  async function runSync() {
+    if (!user) {
+      setSyncMessage("Log in before syncing.");
+      return;
+    }
+
+    setSyncing(true);
+    setSyncMessage("Syncing...");
+    setError(null);
+
+    try {
+      const merged = await syncWithFirebase(user.uid, data, deviceId);
+      await window.api.saveData(merged);
+      setData(merged);
+      setSyncMessage("Synced.");
+
+      const visibleProjects = merged.projects.filter((p) => !p.deletedAt);
+
+      if (
+        selectedProjectId &&
+        !visibleProjects.some((p) => p.id === selectedProjectId)
+      ) {
+        setSelectedProjectId(visibleProjects[0]?.id ?? null);
+      } else if (!selectedProjectId && visibleProjects.length > 0) {
+        setSelectedProjectId(visibleProjects[0].id);
+      }
+    } catch (e) {
+      console.error(e);
+      setSyncMessage("Sync failed. Local data is still saved.");
+    } finally {
+      setSyncing(false);
+    }
+  }
+
+  async function handleSyncNow() {
+    await runSync();
+  }
+
+  useEffect(() => {
+    if (loading || authLoading || !user) return;
+
+    void runSync();
+
+    // only auto-sync when login/startup state finishes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [loading, authLoading, user?.uid]);
+
+  const projects = data.projects.filter((p) => !p.deletedAt);
   const selectedProject =
     projects.find((p) => p.id === selectedProjectId) ?? null;
-  const tasks: Task[] = selectedProject ? selectedProject.tasks : [];
+  const tasks: Task[] = selectedProject
+    ? selectedProject.tasks.filter((t) => !t.deletedAt)
+    : [];
 
   const focus100: Focus100Data = data.focus100 ?? createEmptyFocus100();
-
-  // const totalProjects = projects.length;
-  // const totalTasks = projects.reduce((sum, p) => sum + p.tasks.length, 0);
 
   const settings: AppSettings = data.settings ?? {};
 
   const backgroundImagePath = settings.backgroundImagePath ?? null;
   const backgroundImageDataUrl = settings.backgroundImageDataUrl ?? null;
 
-  const fontColor = settings.fontColor ?? "#ffffff"; // or whichever default you like
-
+  const fontColor = settings.fontColor ?? "#ffffff";
 
   const alarmSoundPath = settings.alarmSoundPath ?? null;
   const alarmSoundDataUrl = settings.alarmSoundDataUrl ?? null;
-
 
   // Pomodoro settings with defaults
   const usePomodoro = settings.usePomodoro ?? false;
@@ -167,10 +281,9 @@ function App() {
     pomodoroWorkSeconds,
     pomodoroShortBreakSeconds,
     pomodoroLongBreakSeconds,
-    pomodoroCyclesBeforeLongBreak
+    pomodoroCyclesBeforeLongBreak,
   ].join("-");
 
-  // Wallpaper: dynamic background image; layout in CSS (.app-background)
   const backgroundStyle: CSSProperties = backgroundImageDataUrl
     ? {
         backgroundImage: `url("${backgroundImageDataUrl}")`,
@@ -178,7 +291,6 @@ function App() {
     : {};
 
   useEffect(() => {
-    // this will be used by the .colourChange CSS class
     document.documentElement.style.setProperty(
       "--cpd-font-color",
       fontColor
@@ -195,16 +307,20 @@ function App() {
     setSavingProject(true);
     setError(null);
 
+    const createdAt = nowIso();
+
     const newProject: Project = {
       id: generateId(),
       name: name.trim(),
-      createdAt: new Date().toISOString(),
-      tasks: []
+      createdAt,
+      updatedAt: createdAt,
+      deletedAt: null,
+      tasks: [],
     };
 
     const updated: AppData = {
       ...data,
-      projects: [...projects, newProject]
+      projects: [...data.projects, newProject],
     };
 
     try {
@@ -218,13 +334,31 @@ function App() {
   async function handleDeleteProject(projectId: string) {
     setError(null);
 
+    const deletedAt = nowIso();
+
     const updated: AppData = {
       ...data,
-      projects: projects.filter((p) => p.id !== projectId)
+      projects: data.projects.map((p) =>
+        p.id === projectId
+          ? {
+              ...p,
+              deletedAt,
+              updatedAt: deletedAt,
+              tasks: p.tasks.map((t) => ({
+                ...t,
+                deletedAt: t.deletedAt ?? deletedAt,
+                updatedAt: deletedAt,
+              })),
+            }
+          : p
+      ),
     };
 
     if (selectedProjectId === projectId) {
-      setSelectedProjectId(null);
+      const nextVisibleProject = updated.projects.find(
+        (p) => !p.deletedAt && p.id !== projectId
+      );
+      setSelectedProjectId(nextVisibleProject?.id ?? null);
     }
 
     await persist(updated);
@@ -234,18 +368,23 @@ function App() {
     projectId: string,
     updater: (tasks: Task[]) => Task[]
   ): AppData {
-    const updatedProjects = projects.map((p) => {
+    const updatedAt = nowIso();
+
+    const updatedProjects = data.projects.map((p) => {
       if (p.id !== projectId) return p;
+
       const newTasks = updater(p.tasks);
+
       return {
         ...p,
-        tasks: newTasks
+        updatedAt,
+        tasks: newTasks,
       };
     });
 
     return {
       ...data,
-      projects: updatedProjects
+      projects: updatedProjects,
     };
   }
 
@@ -255,15 +394,20 @@ function App() {
     setSavingTask(true);
     setError(null);
 
+    const createdAt = nowIso();
+
     const newTask: Task = {
       id: generateId(),
       title: name.trim(),
-      status: "todo"
+      status: "todo",
+      createdAt,
+      updatedAt: createdAt,
+      deletedAt: null,
     };
 
     const updated = updateProjectTasks(selectedProjectId, (tasks) => [
       ...tasks,
-      newTask
+      newTask,
     ]);
 
     try {
@@ -277,9 +421,11 @@ function App() {
     if (!selectedProjectId) return;
     setError(null);
 
+    const updatedAt = nowIso();
+
     const updated = updateProjectTasks(selectedProjectId, (tasks) =>
       tasks.map((t) =>
-        t.id === taskId ? { ...t, status: newStatus } : t
+        t.id === taskId ? { ...t, status: newStatus, updatedAt } : t
       )
     );
 
@@ -290,44 +436,58 @@ function App() {
     if (!selectedProjectId) return;
     setError(null);
 
+    const deletedAt = nowIso();
+
     const updated = updateProjectTasks(selectedProjectId, (tasks) =>
-      tasks.filter((t) => t.id !== taskId)
+      tasks.map((t) =>
+        t.id === taskId
+          ? {
+              ...t,
+              deletedAt,
+              updatedAt: deletedAt,
+            }
+          : t
+      )
     );
 
     await persist(updated);
   }
 
-  // Rename a project
   async function handleRenameProject(projectId: string, newName: string) {
     const trimmed = newName.trim();
-    if (!trimmed) return; // ignore empty
+    if (!trimmed) return;
 
     setError(null);
 
-    const updatedProjects = projects.map(p =>
-      p.id === projectId ? { ...p, name: trimmed } : p
+    const updatedAt = nowIso();
+
+    const updatedProjects = data.projects.map((p) =>
+      p.id === projectId
+        ? { ...p, name: trimmed, updatedAt }
+        : p
     );
 
     const updated: AppData = {
       ...data,
-      projects: updatedProjects
+      projects: updatedProjects,
     };
 
     await persist(updated);
   }
 
-  // Rename a task (for the currently selected project)
   async function handleRenameTask(taskId: string, newTitle: string) {
     if (!selectedProjectId) return;
 
     const trimmed = newTitle.trim();
-    if (!trimmed) return; // ignore empty
+    if (!trimmed) return;
 
     setError(null);
 
-    const updated = updateProjectTasks(selectedProjectId, tasks =>
-      tasks.map(t =>
-        t.id === taskId ? { ...t, title: trimmed } : t
+    const updatedAt = nowIso();
+
+    const updated = updateProjectTasks(selectedProjectId, (tasks) =>
+      tasks.map((t) =>
+        t.id === taskId ? { ...t, title: trimmed, updatedAt } : t
       )
     );
 
@@ -335,9 +495,19 @@ function App() {
   }
 
   async function handleFocus100Change(nextFocus100: Focus100Data) {
+    const updatedAt = nowIso();
+
     const updated: AppData = {
       ...data,
-      focus100: nextFocus100
+      focus100: {
+        ...nextFocus100,
+        updatedAt,
+        tasks: nextFocus100.tasks.map((task) => ({
+          ...task,
+          updatedAt: task.updatedAt ?? updatedAt,
+          deletedAt: task.deletedAt ?? null,
+        })),
+      },
     };
 
     await persist(updated);
@@ -347,12 +517,13 @@ function App() {
   function updateSettings(partial: Partial<AppSettings>) {
     const newSettings: AppSettings = {
       ...settings,
-      ...partial
+      ...partial,
+      updatedAt: nowIso(),
     };
 
     const updated: AppData = {
       ...data,
-      settings: newSettings
+      settings: newSettings,
     };
 
     void persist(updated);
@@ -371,7 +542,7 @@ function App() {
 
       updateSettings({
         backgroundImagePath: result.filePath,
-        backgroundImageDataUrl: result.dataUrl
+        backgroundImageDataUrl: result.dataUrl,
       });
     } catch (e) {
       console.error(e);
@@ -382,19 +553,18 @@ function App() {
   async function handleClearBackground() {
     updateSettings({
       backgroundImagePath: null,
-      backgroundImageDataUrl: null
+      backgroundImageDataUrl: null,
     });
   }
 
   async function handleChooseAlarmSound() {
     try {
       const result = await window.api.chooseAlarmSound();
-      // Expecting same shape as chooseBackground: { canceled, filePath, dataUrl }
       if (result.canceled || !result.filePath || !result.dataUrl) return;
 
       updateSettings({
         alarmSoundPath: result.filePath,
-        alarmSoundDataUrl: result.dataUrl
+        alarmSoundDataUrl: result.dataUrl,
       });
     } catch (e) {
       console.error(e);
@@ -405,10 +575,9 @@ function App() {
   async function handleClearAlarmSound() {
     updateSettings({
       alarmSoundPath: null,
-      alarmSoundDataUrl: null
+      alarmSoundDataUrl: null,
     });
   }
-
 
   if (loading) {
     return <p className="app-loading">Loading…</p>;
@@ -416,20 +585,81 @@ function App() {
 
   return (
     <div className="app-background" style={backgroundStyle}>
-      {/* inner content container – fully opaque, just sits on top of wallpaper */}
       <div className="app-inner">
         <header className="app-header">
           <div>
             <h1 className="colourChange">Cloud Productivity Dashboard</h1>
           </div>
 
-          {/* Settings button (opens modal) */}
           <div className="app-settings-row">
+            {authLoading ? (
+              <span className="colourChange">Checking login...</span>
+            ) : user ? (
+              <>
+                <span className="colourChange">
+                  Logged in as {user.email}
+                </span>
+
+                {data.lastSyncedAt && (
+                  <span className="colourChange">
+                    Last synced: {new Date(data.lastSyncedAt).toLocaleString()}
+                  </span>
+                )}
+
+                <button
+                  type="button"
+                  onClick={handleSyncNow}
+                  disabled={syncing}
+                >
+                  {syncing ? "Syncing..." : "Sync now"}
+                </button>
+
+                <button type="button" onClick={() => logout()}>
+                  Log out
+                </button>
+              </>
+            ) : (
+              <form onSubmit={handleAuthSubmit}>
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                />
+
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                />
+
+                <button type="submit">
+                  {authMode === "login" ? "Log in" : "Register"}
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setAuthMode(authMode === "login" ? "register" : "login")
+                  }
+                >
+                  {authMode === "login" ? "Need account?" : "Have account?"}
+                </button>
+              </form>
+            )}
+
             <button type="button" onClick={() => setSettingsOpen(true)}>
               Settings…
             </button>
           </div>
         </header>
+
+        {syncMessage && (
+          <p className="colourChange app-sync-message">{syncMessage}</p>
+        )}
 
         <CountdownTimer
           key={timerKey}
@@ -501,7 +731,6 @@ function App() {
           </section>
         </div>
 
-        {/* Settings Modal */}
         <SettingsModal
           open={settingsOpen}
           onClose={() => setSettingsOpen(false)}
