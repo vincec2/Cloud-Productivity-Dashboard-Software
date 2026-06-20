@@ -101,15 +101,18 @@ body,
   align-items: center;
   gap: 0.5rem;
   font-size: 0.9rem;
+  justify-content: flex-end;
+  margin-left: auto;
 }
 
 .app-settings-row form {
-  display: flex;
+  display: grid;
+  grid-template-columns: auto auto;
+  grid-template-rows: auto auto;
+  column-gap: 0.4rem;
+  row-gap: 0.35rem;
   align-items: center;
-  gap: 0.4rem;
-  flex-wrap: wrap;
-  justify-content: flex-end;
-  max-width: 22rem;
+  justify-content: end;
 }
 
 .app-settings-row input {
@@ -122,8 +125,27 @@ body,
 }
 
 .app-settings-row form input[type="email"] {
-  position: relative;
-  right: 4.6rem;
+  grid-column: 1;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.app-settings-row form input[type="password"] {
+  grid-column: 1;
+  grid-row: 2;
+  justify-self: end;
+}
+
+.app-settings-row form button[type="submit"] {
+  grid-column: 2;
+  grid-row: 1;
+  justify-self: end;
+}
+
+.app-settings-row form button[type="button"] {
+  grid-column: 2;
+  grid-row: 2;
+  justify-self: end;
 }
 
 .app-settings-row button {

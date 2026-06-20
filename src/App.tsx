@@ -20,7 +20,14 @@ import { ProjectList } from "./components/ProjectList";
 import { TaskPanel } from "./components/TaskPanel";
 import { CountdownTimer } from "./components/CountdownTimer";
 import { Focus100Panel } from "./components/Focus100Panel";
-import { login, register, logout, observeAuthState } from "./auth";
+import {
+  login,
+  register,
+  logout,
+  observeAuthState,
+  sendVerificationEmail,
+  refreshUser,
+} from "./auth";
 import {
   normalizeForSync,
   stampLocalChange,
@@ -189,10 +196,50 @@ function App() {
 
       setEmail("");
       setPassword("");
-      setSyncMessage("Logged in. You can sync now.");
+      setSyncMessage(
+        authMode === "register"
+          ? "Account created. Check your email to verify before syncing."
+          : "Logged in."
+      );
     } catch (e) {
       console.error(e);
       setError("Authentication failed.");
+    }
+  }
+
+  async function handleResendVerificationEmail() {
+    if (!user) return;
+
+    setError(null);
+    setSyncMessage(null);
+
+    try {
+      await sendVerificationEmail(user);
+      setSyncMessage("Verification email sent. Check your inbox.");
+    } catch (e) {
+      console.error(e);
+      setError("Failed to send verification email.");
+    }
+  }
+
+  async function handleRefreshVerificationStatus() {
+    if (!user) return;
+
+    setError(null);
+    setSyncMessage(null);
+
+    try {
+      const refreshedUser = await refreshUser(user);
+      setUser(refreshedUser);
+
+      if (refreshedUser?.emailVerified) {
+        setSyncMessage("Email verified. You can sync now.");
+      } else {
+        setSyncMessage("Email is still not verified.");
+      }
+    } catch (e) {
+      console.error(e);
+      setError("Failed to refresh verification status.");
     }
   }
 
@@ -201,6 +248,13 @@ function App() {
       setSyncMessage("Log in before syncing.");
       return;
     }
+
+    if (!user.emailVerified) {
+      setSyncMessage("Please verify your email before syncing.");
+      return;
+    }
+
+    await user.getIdToken(true);
 
     setSyncing(true);
     setSyncMessage("Syncing...");
@@ -600,6 +654,28 @@ function App() {
                   Logged in as {user.email}
                 </span>
 
+                {!user.emailVerified && (
+                  <>
+                    <span className="colourChange">
+                      Email not verified
+                    </span>
+
+                    <button
+                      type="button"
+                      onClick={handleResendVerificationEmail}
+                    >
+                      Resend verification
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={handleRefreshVerificationStatus}
+                    >
+                      I verified
+                    </button>
+                  </>
+                )}
+
                 {data.lastSyncedAt && (
                   <span className="colourChange">
                     Last synced: {new Date(data.lastSyncedAt).toLocaleString()}
@@ -609,7 +685,7 @@ function App() {
                 <button
                   type="button"
                   onClick={handleSyncNow}
-                  disabled={syncing}
+                  disabled={syncing || !user.emailVerified}
                 >
                   {syncing ? "Syncing..." : "Sync now"}
                 </button>

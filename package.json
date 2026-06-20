@@ -1,7 +1,7 @@
 {
   "name": "cloud-productivity-dashboard",
   "private": true,
-  "version": "2.1.0",
+  "version": "2.1.1",
   "author": "vincec2",
   "main": "electron/main.cjs",
   "type": "module",
